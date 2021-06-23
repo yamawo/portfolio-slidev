@@ -1,63 +1,43 @@
 ---
-# try also 'default' to start simple
-theme: seriph
-# random image from a curated Unsplash collection by Anthony
-# like them? see https://unsplash.com/collections/94734566/slidev
+theme: default
 background: https://source.unsplash.com/collection/94734566/1920x1080
-# apply any windi css classes to the current slide
-class: 'text-center'
-# https://sli.dev/custom/highlighters.html
+class: text-center
 highlighter: shiki
-# some information about the slides, markdown enabled
 info: |
   ## Slidev Starter Template
   Presentation slides for developers.
 
   Learn more at [Sli.dev](https://sli.dev)
+title: portfolio-slide
 ---
 
-# Welcome to Slidev
-
-Presentation slides for developers
+# ブラウザっぽいポートフォリオ作ってみた
 
 <div class="pt-12">
-  <span @click="$slidev.nav.next" class="px-2 p-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
-    Press Space for next page <carbon:arrow-right class="inline"/>
+  <span @click="$slidev.nav.next" class="text-xl px-2 p-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
+    PE5U1G 山﨑 翔太
   </span>
 </div>
 
-<a href="https://github.com/slidevjs/slidev" target="_blank" alt="GitHub"
+<a href="https://github.com/yamawo" target="_blank" alt="GitHub"
   class="abs-br m-6 text-xl icon-btn opacity-50 !border-none !hover:text-white">
-  <carbon-logo-github />
+<carbon-logo-github />
 </a>
-
-<!--
-The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
--->
 
 ---
 
-# What is Slidev?
-
-Slidev is a slides maker and presenter designed for developers, consist of the following features
-
-- 📝 **Text-based** - focus on the content with Markdown, and then style them later
-- 🎨 **Themable** - theme can be shared and used with npm packages
-- 🧑‍💻 **Developer Friendly** - code highlighting, live coding with autocompletion
-- 🤹 **Interactive** - embedding Vue components to enhance your expressions
-- 🎥 **Recording** - built-in recording and camera view
-- 📤 **Portable** - export into PDF, PNGs, or even a hostable SPA
-- 🛠 **Hackable** - anything possible on a webpage
+# アジェンダ
 
 <br>
 <br>
 
-Read more about [Why Slidev?](https://sli.dev/guide/why)
+- **制作物の紹介**
+- **実装の一部見せます**
+- **おまけ**
 
-<!--
-You can have `style` tag in markdown to override the style for the current page.
-Learn more: https://sli.dev/guide/syntax#embedded-styles
--->
+<br>
+<br>
+<br>
 
 <style>
 h1 {
@@ -73,48 +53,204 @@ h1 {
 
 ---
 
-# Navigation
+# 制作物の紹介
 
-Hover on the bottom-left corner to see the navigation's controls panel, [learn more](https://sli.dev/guide/navigation.html)
-
-### Keyboard Shortcuts
-
-|     |     |
-| --- | --- |
-| <kbd>right</kbd> / <kbd>space</kbd>| next animation or slide |
-| <kbd>left</kbd>  / <kbd>shift</kbd><kbd>space</kbd> | previous animation or slide |
-| <kbd>up</kbd> | previous slide |
-| <kbd>down</kbd> | next slide |
-
-<!-- https://sli.dev/guide/animations.html#click-animations -->
-<img
-  v-click
-  class="absolute -bottom-9 -left-7 w-80 opacity-50"
-  src="https://sli.dev/assets/arrow-bottom-left.svg"
-/>
-<p v-after class="absolute bottom-23 left-45 opacity-30 transform -rotate-10">Here!</p>
+<div>
+<img src="/pngs/portfolio-top.png" >
+</div>
 
 ---
-layout: image-right
-image: https://source.unsplash.com/collection/94734566/1920x1080
+
+# 制作物の紹介
+
+|                                         |                                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| <kbd class="ml-2 mr-24">使用技術</kbd>  | Next.js, TypeScript, CSS Modules, TailwindCSS, vercel                                                                 |
+| <kbd class="ml-2 mr-24">目的/動機</kbd> | <span class="inline-block mb-2">Next.js 使ってみたかった</span><br>ブラウザの動き、ある程度 JavaScript で再現出来そう |
+| <kbd class="ml-2 mr-24">期間</kbd>      | 丸 4 日程度                                                                                                           |
+
 ---
+
+# 実装の一部見せます
+
+ブラウザの切り替えを行っている部分までの処理を追ってみます
+<br>
+<br>
+
+pages/index.tsx
+
+```ts {all|4|5}
+export const Home: NextPage = () => {
+  return (
+    <>
+      <div className={`${styles.screen} w-screen h-screen bg-cover`}>
+        <Browser />
+      </div>
+    </>
+  );
+};
+```
+
+---
+
+# 実装の一部見せます
+
+様々なコンポーネントの親となる Browser コンポーネント
+<br>
+
+components/domain/browser/Browser.tsx
+
+```ts {all|2|4-9|13-16}
+export const Browser: React.FC = () => {
+  const [selectedTabNumber, setSelectedTabNuber] = React.useState<TabNumber>(0);
+
+  const handleClickTab = React.useCallback(
+    (tabNumber: TabNumber): void => {
+      setSelectedTabNuber(tabNumber);
+    },
+    [selectedTabNumber]
+  );
+
+  return (
+    ...
+    <Tab
+      selectedTabNumber={selectedTabNumber}
+      onClickTab={handleClickTab}
+    />
+    ...
+  );
+};
+```
+
+---
+
+# 実装の一部見せます
+
+Tab 部分のコンポーネント
+<br>
+
+components/domain/navigation/tab/Tab.tsx
+
+```ts {all|11-13}
+export const Tab: React.FC<Props> = ({ selectedTabNumber, deletedTabAry, onClickTab, onClickDeleteTab }) => {
+  const tabList = ["Home", "Skills", "Works"];
+
+  const handleClickTab = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+      onClickTab(Number.parseInt(e.currentTarget.dataset.id, 10) as TabNumber);
+    },
+    [onClickTab]
+  );
+
+  return (
+    ...
+  );
+};
+```
+
+---
+
+# 実装の一部見せます
+
+Tab コンポーネント JSX 部分
+<br>
+
+components/domain/navigation/tab/Tab.tsx
+
+```ts
+return (
+  <>
+    {tabList.map((t, index) => (
+      <div
+        className={
+          selectedTabNumber === index
+            ? `${styles.selected} ${styles.tab}`
+            : `${styles.tab}`
+        }
+        onClick={handleClickTab}
+      >
+        ...
+        {selectedTabNumber === index
+          ? {
+              /* 選択されている Tab を装飾するための html タグ */
+            }
+          : null}
+      </div>
+    ))}
+  </>
+);
+```
+
+---
+
+# おわり
+
+<br>
+<br>
+
+### いかがでしたでしょうか。
+
+### 今後も気まぐれにエンハンスをしていくつもりなので、もっとコードをちゃんと見たい
+
+### 方は、https://yamawo.info へアクセスしてみて下さい！
+
+<style>
+h3 {
+  font-size: 20px;
+  background-color: #ffffff;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent; 
+  -moz-text-fill-color: transparent;
+}
+</style>
+
+---
+
+# おまけ
+
+<style>
+h1 {
+  font-size: 60px;
+  text-align: center;
+  margin-top: 200px;
+}
+</style>
+
+---
+
+# 今回使用したこのスライドの紹介
+
+<br>
+
+## Slidev
+
+|                                    |                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd class="ml-2 mr-24">特徴</kbd> | <span class="inline-block mb-2">・マークダウンでスライド作成可能</span><br><span class="inline-block mb-2">・スライドに CSS 形式のスタイルを適用可能</span><br><span class="inline-block mb-2">・コードの埋め込み、ハイライトが出来る</span><br><span class="inline-block mb-2">・Vue3 で作られているので Vue コンポーネントを埋めたりも出来る</span><br>などなど... |
+
+<div class="flex ml-90">
+<Tweet id="1390115482657726468" scale="0.65" />
+</div>
+
+--
 
 # Code
 
 Use code snippets and get the highlighting directly[^1]!
 
-```ts {all|2|1-6|9|all}
+```ts {monaco}
 interface User {
-  id: number
-  firstName: string
-  lastName: string
-  role: string
+  id: number;
+  firstName: string;
+  lastName: string;
+  role: string;
 }
 
 function updateUser(id: number, update: User) {
-  const user = getUser(id)
-  const newUser = {...user, ...update}  
-  saveUser(id, newUser)
+  const user = getUser(id);
+  const newUser = { ...user, ...update };
+  saveUser(id, newUser);
 }
 ```
 
@@ -163,9 +299,6 @@ Check out [the guides](https://sli.dev/builtin/components.html) for more.
 </div>
 </div>
 
-
----
-class: px-20
 ---
 
 # Themes
@@ -196,20 +329,13 @@ Read more about [How to use a theme](https://sli.dev/themes/use.html) and
 check out the [Awesome Themes Gallery](https://sli.dev/themes/gallery.html).
 
 ---
-preload: false
----
 
 # Animations
 
 Animations are powered by [@vueuse/motion](https://motion.vueuse.org/).
 
 ```html
-<div
-  v-motion
-  :initial="{ x: -80 }"
-  :enter="{ x: 0 }">
-  Slidev
-</div>
+<div v-motion :initial="{ x: -80 }" :enter="{ x: 0 }">Slidev</div>
 ```
 
 <div class="w-60 relative mt-6">
@@ -282,6 +408,7 @@ LaTeX is supported out-of-box powered by [KaTeX](https://katex.org/).
 Inline $\sqrt{3x-1}+(1+x)^2$
 
 Block
+
 $$
 \begin{array}{c}
 
@@ -323,13 +450,3 @@ C -->|Two| E[Result 2]
 </div>
 
 [Learn More](https://sli.dev/guide/syntax.html#diagrams)
-
-
----
-layout: center
-class: text-center
----
-
-# Learn More
-
-[Documentations](https://sli.dev) / [GitHub Repo](https://github.com/slidevjs/slidev)
